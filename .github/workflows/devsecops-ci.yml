@@ -136,7 +136,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: v0.74.0
           scan-type: fs
@@ -253,7 +253,7 @@ jobs:
         run: docker images
 
       - name: Scan Node image
-        uses: aquasecurity/trivy-action@v0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build-images.outputs.node_image }}
           severity: HIGH,CRITICAL
@@ -262,7 +262,7 @@ jobs:
           format: table
 
       - name: Scan Python image
-        uses: aquasecurity/trivy-action@v0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build-images.outputs.python_image }}
           severity: HIGH,CRITICAL
@@ -271,7 +271,7 @@ jobs:
           format: table
 
       - name: Generate Node SBOM
-        uses: aquasecurity/trivy-action@v0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build-images.outputs.node_image }}
           format: cyclonedx
@@ -279,7 +279,7 @@ jobs:
           exit-code: 0
 
       - name: Generate Python SBOM
-        uses: aquasecurity/trivy-action@v0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build-images.outputs.python_image }}
           format: cyclonedx
