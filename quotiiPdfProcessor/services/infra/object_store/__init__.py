@@ -6,12 +6,12 @@ and a thin Cloud-indexing write path so callers never touch raw S3 SDK details.
 R2ObjectStore is imported lazily so fake/unit tests do not require boto3.
 """
 from services.infra.object_store.base import ObjectStore
-from services.infra.object_store.fake import FakeObjectStore
 from services.infra.object_store.factory import get_object_store, store_book_context
+from services.infra.object_store.fake import FakeObjectStore
 
 __all__ = [
-    "ObjectStore",
     "FakeObjectStore",
+    "ObjectStore",
     "R2ObjectStore",
     "get_object_store",
     "store_book_context",

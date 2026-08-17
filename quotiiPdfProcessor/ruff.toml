@@ -1,0 +1,31 @@
+target-version = "py311"
+
+[lint]
+# BLE001: the run_cloud_index pipeline catch-all (cloud_indexing.py) must stay
+# broad — it is the last-resort handler that transitions any unexpected failure
+# to IndexStatus.FAILED so the book is never stuck in processing.
+# Suppressed per-file below rather than globally.
+extend-select = ["I", "UP", "RUF", "SIM", "DTZ", "BLE", "B", "N"]
+
+[lint.flake8-bugbear]
+# FastAPI declares route parameters with File(...), Form(...), Depends(...) etc.
+# in function signatures. These are intentional and safe — FastAPI's DI system
+# evaluates them at request time, not at import time.
+extend-immutable-calls = [
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Body",
+]
+
+[lint.per-file-ignores]
+# run_cloud_index must catch all exceptions to transition the job to FAILED.
+"services/indexing/cloud_indexing.py" = ["BLE001"]
+# FastAPI route handler names (indexPdf, retryIndex) and camelCase Form
+# parameter names (userId, jobId) match the wire API contract and cannot be
+# renamed without a breaking change to all clients.
+"app.py" = ["N802", "N803"]

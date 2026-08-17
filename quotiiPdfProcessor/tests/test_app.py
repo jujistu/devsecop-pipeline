@@ -1,8 +1,9 @@
-import unittest
-from unittest.mock import patch, MagicMock, AsyncMock
-from fastapi.testclient import TestClient
-import sys
 import os
+import sys
+import unittest
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from fastapi.testclient import TestClient
 
 # Add the parent directory to the sys.path to allow imports from the app module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

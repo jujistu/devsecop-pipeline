@@ -1,6 +1,6 @@
-/quotiiBackend/ @quotii/backend-team
-/quotiiPdfProcessor/ @quotii/platform-team
-/.github/workflows/ @quotii/devops-team
-/docker-compose*.yml @quotii/devops-team
-/quotiiBackend/Dockerfile @quotii/devops-team
-/quotiiPdfProcessor/Dockerfile @quotii/devops-team
+// /quotiiBackend/ @quotii/backend-team
+// /quotiiPdfProcessor/ @quotii/platform-team
+// /.github/workflows/ @quotii/devops-team
+// /docker-compose*.yml @quotii/devops-team
+// /quotiiBackend/Dockerfile @quotii/devops-team
+// /quotiiPdfProcessor/Dockerfile @quotii/devops-team

@@ -1,10 +1,14 @@
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import JSONResponse
 import re
 
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.responses import JSONResponse
+
+from services.indexing.cloud_indexing import (
+    enqueue_cloud_index,
+    prepare_retry_cloud_index,
+)
 from services.infra.db import get_mongo_db
 from services.infra.object_store import get_object_store
-from services.indexing.cloud_indexing import enqueue_cloud_index, prepare_retry_cloud_index
 from services.queue import enqueue_cloud_index_job
 
 app = FastAPI(title="quotiiPdfProcessor")
@@ -72,7 +76,7 @@ async def indexPdf(
         )
         try:
             await enqueue_cloud_index_job(user_id=userId, job_id=jobId)
-        except Exception:
+        except (OSError, RuntimeError, ConnectionError):
             # Never leave a book stuck in queued when Redis is unreachable.
             db.books.update_one(
                 {'jobId': str(jobId)},
@@ -86,7 +90,7 @@ async def indexPdf(
             },
             status_code=202,
         )
-    except Exception as e:
+    except (OSError, RuntimeError, ConnectionError, ValueError) as e:
         print('error enqueueing cloud index ---> ', e)
         return JSONResponse(
             content={"job_id": jobId, "index_status": "failed", "error": str(e)},
@@ -125,7 +129,7 @@ async def retryIndex(payload: dict):
             await enqueue_cloud_index_job(
                 user_id=snap["user_id"], job_id=snap["job_id"]
             )
-        except Exception:
+        except (OSError, RuntimeError, ConnectionError):
             db.books.update_one(
                 {"jobId": snap["job_id"]},
                 {"$set": {"indexStatus": "failed", "indexError": "queue enqueue failed"}},
@@ -135,6 +139,6 @@ async def retryIndex(payload: dict):
             content={"job_id": snap["job_id"], "index_status": "queued"},
             status_code=202,
         )
-    except Exception as e:
+    except (OSError, RuntimeError, ConnectionError, ValueError, FileNotFoundError) as e:
         print('error retrying cloud index ---> ', e)
         return JSONResponse(content={"error": str(e)}, status_code=500)

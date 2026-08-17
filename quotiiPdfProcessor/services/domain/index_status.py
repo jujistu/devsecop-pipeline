@@ -2,10 +2,10 @@
 
 ``ready`` means Book context exists for Book AI.
 """
-from enum import Enum
+from enum import StrEnum
 
 
-class IndexStatus(str, Enum):
+class IndexStatus(StrEnum):
     QUEUED = "queued"
     PROCESSING = "processing"
     READY = "ready"

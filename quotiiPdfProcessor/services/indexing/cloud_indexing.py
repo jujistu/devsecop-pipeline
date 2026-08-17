@@ -16,14 +16,15 @@ import asyncio
 import os
 import shutil
 import tempfile
-from datetime import datetime
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable, Optional, Protocol
+from typing import Protocol
 
-from services.domain.indexStatus import IndexStatus
+from services.domain.index_status import IndexStatus
 from services.infra.env import Env
 from services.infra.object_store import ObjectStore, store_book_context
-from services.pdf.pdfInspectorExtractor import extract_pages_with_inspector
+from services.pdf.pdf_inspector_extractor import extract_pages_with_inspector
 
 
 class BooksCollection(Protocol):
@@ -41,7 +42,7 @@ ExtractFn = Callable[..., object]
 
 def _default_ocr_extract(pdf_path, job_id, base_dir="outputs", pages=None):
     """Lazy default so Docling is not imported until a scanned/mixed job needs it."""
-    from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+    from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
     return extract_pages_with_docling_ocr(
         pdf_path, job_id, base_dir=base_dir, pages=pages
@@ -57,7 +58,7 @@ def _set_index_status(
     job_id: str,
     status: IndexStatus,
     *,
-    extra: Optional[dict] = None,
+    extra: dict | None = None,
 ) -> None:
     fields = {"indexStatus": status.value, **(extra or {})}
     db.books.update_one({"jobId": str(job_id)}, {"$set": fields})
@@ -102,7 +103,7 @@ def enqueue_cloud_index(
         "indexError": None,
         "contextObjectKey": None,
         "sourceObjectKey": src_key,
-        "createdAt": datetime.now(),
+        "createdAt": datetime.now(UTC),
     }
     inserted = db.books.insert_one(doc)
     return {
@@ -118,15 +119,15 @@ def run_cloud_index(
     object_store: ObjectStore,
     user_id: str,
     job_id: str,
-    pdf_path: Optional[Path] = None,
+    pdf_path: Path | None = None,
     extract_fn: ExtractFn = extract_pages_with_inspector,
-    ocr_extract_fn: Optional[ExtractFn] = None,
-    work_dir: Optional[Path] = None,
+    ocr_extract_fn: ExtractFn | None = None,
+    work_dir: Path | None = None,
 ) -> IndexStatus:
     """Run indexing to ready / failed. Testable with FakeObjectStore + OCR fakes."""
     _set_index_status(db, job_id, IndexStatus.PROCESSING, extra={"indexError": None})
 
-    tmp_dir: Optional[Path] = None
+    tmp_dir: Path | None = None
     base_dir = str(work_dir) if work_dir is not None else "outputs"
     job_out = Path(base_dir) / str(job_id)
     try:
@@ -255,8 +256,8 @@ def retry_cloud_index(
     object_store: ObjectStore,
     job_id: str,
     extract_fn: ExtractFn = extract_pages_with_inspector,
-    ocr_extract_fn: Optional[ExtractFn] = None,
-    work_dir: Optional[Path] = None,
+    ocr_extract_fn: ExtractFn | None = None,
+    work_dir: Path | None = None,
 ) -> IndexStatus:
     """Re-enter the indexing pipeline sync (tests / in-process callers)."""
     snap = prepare_retry_cloud_index(

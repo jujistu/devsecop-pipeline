@@ -101,7 +101,7 @@ class TestDoclingOcrExtractor(unittest.TestCase):
 
     def test_writes_page_markdown_files(self):
         convert_calls = self._activate_fake_docling(page_count=2)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         out_dir = extract_pages_with_docling_ocr(
             "scan.pdf", "job-ocr-1", base_dir=self.tmp
@@ -125,7 +125,7 @@ class TestDoclingOcrExtractor(unittest.TestCase):
 
     def test_pages_arg_converts_per_page_range(self):
         convert_calls = self._activate_fake_docling(page_count=10)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         out_dir = Path(self.tmp) / "job-hybrid"
         out_dir.mkdir()
@@ -154,7 +154,7 @@ class TestDoclingOcrExtractor(unittest.TestCase):
     def test_full_document_ocr_pages_uses_one_convert(self):
         """scanned/image_based: pages == every file on disk → full convert."""
         convert_calls = self._activate_fake_docling(page_count=3)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         out_dir = Path(self.tmp) / "job-scan"
         out_dir.mkdir()
@@ -174,7 +174,7 @@ class TestDoclingOcrExtractor(unittest.TestCase):
     def test_prefix_ocr_pages_still_per_page(self):
         """OCR pages 1..K on a longer book must not trigger full convert."""
         convert_calls = self._activate_fake_docling(page_count=10)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         out_dir = Path(self.tmp) / "job-mixed-prefix"
         out_dir.mkdir()
@@ -200,14 +200,14 @@ class TestDoclingOcrExtractor(unittest.TestCase):
 
     def test_empty_pages_raises(self):
         self._activate_fake_docling(page_count=0)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         with self.assertRaises(ValueError):
             extract_pages_with_docling_ocr("empty.pdf", "job-empty", base_dir=self.tmp)
 
     def test_empty_pages_list_raises(self):
         self._activate_fake_docling(page_count=2)
-        from services.pdf.doclingOcrExtractor import extract_pages_with_docling_ocr
+        from services.pdf.docling_ocr_extractor import extract_pages_with_docling_ocr
 
         with self.assertRaises(ValueError):
             extract_pages_with_docling_ocr(

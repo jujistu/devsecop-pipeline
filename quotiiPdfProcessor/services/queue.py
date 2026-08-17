@@ -4,12 +4,11 @@ The queue is treated as disposable — Mongo + R2 are the source of truth for
 recovery (``/retry-index`` re-drives a job from the stored source PDF).
 """
 import os
-from typing import Optional
 
 from arq import create_pool
 from arq.connections import ArqRedis, RedisSettings
 
-_pool: Optional[ArqRedis] = None
+_pool: ArqRedis | None = None
 
 
 def redis_settings() -> RedisSettings:

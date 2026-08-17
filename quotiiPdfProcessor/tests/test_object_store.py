@@ -1,6 +1,6 @@
-import unittest
-import sys
 import os
+import sys
+import unittest
 from unittest.mock import patch
 
 # Add the repo root to sys.path so `services.*` imports resolve (matches the
@@ -8,8 +8,8 @@ from unittest.mock import patch
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from services.infra.object_store.base import ObjectStore
-from services.infra.object_store.fake import FakeObjectStore
 from services.infra.object_store.factory import store_book_context
+from services.infra.object_store.fake import FakeObjectStore
 
 
 class TestObjectStoreSeam(unittest.TestCase):

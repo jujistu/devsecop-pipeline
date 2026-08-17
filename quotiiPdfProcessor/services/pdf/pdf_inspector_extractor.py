@@ -27,7 +27,7 @@ class _ExtractionResult:
     ``pages_needing_ocr`` is a 1-indexed list of page numbers (empty when none).
     """
 
-    __slots__ = ("out_dir", "pdf_type", "pages_needing_ocr")
+    __slots__ = ("out_dir", "pages_needing_ocr", "pdf_type")
 
     def __init__(self, out_dir, pdf_type, pages_needing_ocr):
         self.out_dir = out_dir

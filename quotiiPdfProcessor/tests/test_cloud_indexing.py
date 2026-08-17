@@ -1,22 +1,22 @@
 """Cloud indexing seam tests — FakeObjectStore only (no live R2 / Docling)."""
-import sys
 import os
-import tempfile
 import shutil
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from services.domain.indexStatus import IndexStatus
-from services.infra.object_store.fake import FakeObjectStore
+from services.domain.index_status import IndexStatus
 from services.indexing.cloud_indexing import (
     enqueue_cloud_index,
     retry_cloud_index,
     run_cloud_index,
     source_object_key,
 )
+from services.infra.object_store.fake import FakeObjectStore
 
 
 class FakeInsertResult:

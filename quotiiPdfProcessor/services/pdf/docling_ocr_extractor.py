@@ -13,8 +13,8 @@ slower when almost every page needs OCR.
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 
 def _page_files(out_dir: Path) -> list[int]:
@@ -52,7 +52,7 @@ def extract_pages_with_docling_ocr(
     pdf_path,
     job_id,
     base_dir="outputs",
-    pages: Optional[Sequence[int]] = None,
+    pages: Sequence[int] | None = None,
 ):
     """Run Docling Standard pipeline with RapidOCR (CPU) and write page Markdown.
 
@@ -92,7 +92,7 @@ def extract_pages_with_docling_ocr(
             raise ValueError("Docling OCR pages list is empty")
 
         if _is_full_document_ocr(page_list, out_dir):
-            # scanned / image_based: one pipeline pass beats N× page_range calls.
+            # scanned / image_based: one pipeline pass beats Nx page_range calls.
             result = converter.convert(str(pdf_path))
             _write_all_pages(result.document, out_dir)
             return out_dir

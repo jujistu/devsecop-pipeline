@@ -5,7 +5,6 @@ variables (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET,
 R2_REGION). No credentials are hardcoded here.
 """
 import os
-from typing import Optional
 
 from services.infra.object_store.base import ObjectStore
 
@@ -14,11 +13,11 @@ class R2ObjectStore(ObjectStore):
     def __init__(
         self,
         *,
-        access_key_id: Optional[str] = None,
-        secret_access_key: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        bucket: Optional[str] = None,
-        region: Optional[str] = None,
+        access_key_id: str | None = None,
+        secret_access_key: str | None = None,
+        endpoint: str | None = None,
+        bucket: str | None = None,
+        region: str | None = None,
     ) -> None:
         # Lazy import so FakeObjectStore tests never need boto3 installed.
         import boto3
@@ -52,13 +51,13 @@ class R2ObjectStore(ObjectStore):
             region_name=self._region,
         )
 
-    def put(self, key: str, data: bytes, content_type: Optional[str] = None) -> None:
+    def put(self, key: str, data: bytes, content_type: str | None = None) -> None:
         kwargs = {"Bucket": self._bucket, "Key": key, "Body": data}
         if content_type:
             kwargs["ContentType"] = content_type
         self._client.put_object(**kwargs)
 
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         from botocore.exceptions import ClientError
 
         try:

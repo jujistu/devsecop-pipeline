@@ -4,7 +4,7 @@
 present, otherwise an in-memory fake (safe default for tests/local dev).
 """
 import os
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from services.infra.object_store.base import ObjectStore
 from services.infra.object_store.fake import FakeObjectStore
@@ -29,7 +29,7 @@ def store_book_context(
     user_id: str,
     job_id: str,
     page_texts: Sequence[tuple[int, str]],
-    object_store: Optional[ObjectStore] = None,
+    object_store: ObjectStore | None = None,
 ) -> str:
     """Persist page-aware Book context Markdown through ObjectStore.
 

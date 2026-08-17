@@ -19,10 +19,9 @@ class TestEnv(unittest.TestCase):
 
     def test_production_aliases(self):
         for value in ("production", "Production", "prod", " PROD "):
-            with self.subTest(value=value):
-                with patch.dict(os.environ, {"APP_ENV": value}):
-                    self.assertTrue(Env.is_production())
-                    self.assertFalse(Env.is_development())
+            with self.subTest(value=value), patch.dict(os.environ, {"APP_ENV": value}):
+                self.assertTrue(Env.is_production())
+                self.assertFalse(Env.is_development())
 
     def test_get_strips(self):
         with patch.dict(os.environ, {"REDIS_URL": "  redis://x  "}):
