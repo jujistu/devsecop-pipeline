@@ -76,13 +76,14 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: |
-            quotiiPdfProcessor/requirements.txt
-            quotiiPdfProcessor/requirements-dev.txt
-      - name: Install Python dependencies
+          # Cache key covers only the test requirements — the full ML stack
+          # (torch, transformers, docling) is intentionally excluded here.
+          # pip-audit against the complete production set runs in dependency-scan.
+          cache-dependency-path: quotiiPdfProcessor/requirements-test.txt
+      - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
+          pip install -r requirements-test.txt
       - name: Ruff
         run: ruff check .
       - name: Bandit
@@ -147,8 +148,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.31.0
         with:
+          version: v0.63.0
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret,misconfig
@@ -159,7 +161,7 @@ jobs:
           exit-code: 1
 
       - name: Upload Trivy results
-        if: always()
+        if: always() && hashFiles('trivy-fs.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-fs.sarif
@@ -254,7 +256,7 @@ jobs:
       - name: Load Docker images
         run: docker load -i images.tar
       - name: Scan Node image
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.31.0
         with:
           image-ref: ${{ needs.build-images.outputs.node_image }}
           severity: HIGH,CRITICAL
@@ -262,7 +264,7 @@ jobs:
           exit-code: 1
           format: table
       - name: Scan Python image
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.31.0
         with:
           image-ref: ${{ needs.build-images.outputs.python_image }}
           severity: HIGH,CRITICAL
@@ -270,14 +272,14 @@ jobs:
           exit-code: 1
           format: table
       - name: Generate Node SBOM
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.31.0
         with:
           image-ref: ${{ needs.build-images.outputs.node_image }}
           format: cyclonedx
           output: node-sbom.json
           exit-code: 0
       - name: Generate Python SBOM
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.31.0
         with:
           image-ref: ${{ needs.build-images.outputs.python_image }}
           format: cyclonedx

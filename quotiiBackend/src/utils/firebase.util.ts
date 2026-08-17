@@ -1,5 +1,10 @@
 var admin = require('firebase-admin');
-import { getMessaging, MulticastMessage } from 'firebase-admin/messaging';
+// NOTE: firebase-admin 14 deprecated MulticastMessage (tokens-based) in favour of
+// FidMulticastMessage (fids-based). This function is not currently called — the live
+// notification path uses expo.util.ts. The signature accepts fids so the implementation
+// is ready for when the mobile client is updated to supply Firebase Installation IDs.
+// TODO: wire the mobile client to pass FIDs via the updateUserDeviceToken mutation.
+import { getMessaging, FidMulticastMessage } from 'firebase-admin/messaging';
 
 let firebaseReady = false;
 
@@ -63,7 +68,7 @@ export function initFirebase() {
 }
 
 export const sendNotification = async (
-  tokens: string[],
+  fids: string[],
   title: string,
   content: string,
   imageUrl?: string,
@@ -76,17 +81,17 @@ export const sendNotification = async (
     return;
   }
 
-  const multiCastMessage: MulticastMessage = {
+  const multiCastMessage: FidMulticastMessage = {
     notification: {
       title: title,
       body: content,
       imageUrl: imageUrl,
     },
     data: data,
-    tokens: tokens,
+    fids: fids,
   };
   try {
-    const res = await getMessaging().sendMulticast(multiCastMessage);
+    const res = await getMessaging().sendEachForMulticast(multiCastMessage);
     console.log(JSON.stringify(res));
     return res;
   } catch (e) {
