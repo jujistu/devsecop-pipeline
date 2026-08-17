@@ -67,9 +67,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: quotiiPdfProcessor
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,17 +78,20 @@ jobs:
           # pip-audit against the complete production set runs in dependency-scan.
           cache-dependency-path: quotiiPdfProcessor/requirements-test.txt
       - name: Install test dependencies
+        working-directory: quotiiPdfProcessor
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
       - name: Ruff
+        working-directory: quotiiPdfProcessor
         run: ruff check .
       - name: Bandit
+        working-directory: quotiiPdfProcessor
         run: bandit -r . -x ./tests,./.venv
       - name: Pytest and coverage
         run: |
-          chmod +x scripts/run-tests.sh
-          ./scripts/run-tests.sh
+          chmod +x quotiiPdfProcessor/scripts/run-tests.sh
+          ./quotiiPdfProcessor/scripts/run-tests.sh
       - uses: actions/upload-artifact@v4
         with:
           name: python-coverage
@@ -150,7 +150,7 @@ jobs:
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.31.0
         with:
-          version: v0.63.0
+          version: v0.74.0
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret,misconfig

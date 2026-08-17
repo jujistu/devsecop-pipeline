@@ -15,6 +15,10 @@ compose.log
 .ci/object-store/*
 !.ci/object-store/.gitkeep
 
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
 # Nested service repos (consolidate into this monorepo root on GitHub)
 quotiiBackend/.git
 quotiiPdfProcessor/.git
