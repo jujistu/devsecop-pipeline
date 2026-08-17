@@ -35,8 +35,7 @@ PAT_PEM_ESCAPED='[^#]BEGIN [A-Z ]*PRIVATE KEY-----\\n[A-Za-z0-9+/=]{10}'
 # Real PEM header on its own literal line (not escaped, not commented).
 PAT_PEM_LITERAL='^[^#]*-----BEGIN [A-Z ]*PRIVATE KEY-----$'
 
-# Firebase / GCP service-account JSON — "type": "service_account" only appears
-# in real credential files, never in documentation.
+# Detect Firebase / GCP service-account credential files.
 PAT_FIREBASE='"type"[[:space:]]*:[[:space:]]*"service_account"'
 
 # Non-empty secret variable assignment.
