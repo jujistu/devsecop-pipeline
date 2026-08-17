@@ -1,0 +1,21 @@
+.idea/
+.vscode/
+.venv*/
+venv*/
+
+# macOS Finder metadata
+**/.DS_Store
+
+# env files
+.env
+.env.*
+!.env.example
+__pycache__/
+dist/
+.coverage*
+htmlcov/
+.tox/
+docs/_build/
+uploads
+outputs
+pdfs

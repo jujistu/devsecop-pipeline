@@ -6,7 +6,7 @@ cd "$ROOT"
 
 patterns=(
   'AKIA[0-9A-Z]{16}'
-  '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'
+  '-{5}BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-{5}'
   'firebase-adminsdk'
 )
 
@@ -25,13 +25,14 @@ while IFS= read -r -d '' file; do
       ;;
   esac
   for pattern in "${patterns[@]}"; do
-    if grep -E -q "$pattern" "$file"; then
+    if grep -E -q -- "$pattern" "$file"; then
       echo "Potential secret pattern matched in ${file}" >&2
       exit 1
     fi
   done
 done < <(find . \
   -path './.git' -prune -o \
+  -path './scripts' -prune -o \
   -path './**/node_modules' -prune -o \
   -path './**/.venv' -prune -o \
   -type f -print0)

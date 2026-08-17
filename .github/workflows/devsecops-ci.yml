@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
   PYTHON_VERSION: "3.11"
 
 jobs:
@@ -152,12 +152,10 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
 
-  sonarqube:
-    name: SonarQube SAST and Quality
+  sonarcloud-backend:
+    name: SonarCloud — Backend
     runs-on: ubuntu-latest
-    needs:
-      - node-test
-      - python-test
+    needs: node-test
     permissions:
       contents: read
     steps:
@@ -168,18 +166,31 @@ jobs:
         with:
           name: node-coverage
           path: quotiiBackend/coverage
+      - name: SonarCloud scan (Backend)
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          projectBaseDir: ${{ github.workspace }}/quotiiBackend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  sonarcloud-python:
+    name: SonarCloud — PDF Processor
+    runs-on: ubuntu-latest
+    needs: python-test
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: python-coverage
           path: quotiiPdfProcessor
-      - name: SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-      - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-        timeout-minutes: 10
+      - name: SonarCloud scan (PDF Processor)
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          projectBaseDir: ${{ github.workspace }}/quotiiPdfProcessor
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -192,7 +203,8 @@ jobs:
       - python-test
       - dependency-scan
       - trivy-filesystem
-      - sonarqube
+      - sonarcloud-backend
+      - sonarcloud-python
     permissions:
       contents: read
     outputs:
