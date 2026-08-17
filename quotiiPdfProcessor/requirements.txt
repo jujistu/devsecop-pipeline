@@ -16,4 +16,4 @@ redis>=4.2,<5.2
 
 # PDF extract / OCR
 pdf-inspector==0.2.6
-docling>=2.94.0,<3
+docling>=2.119.0,<3
