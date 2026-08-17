@@ -239,54 +239,67 @@ jobs:
           path: images.tar
 
   image-scan:
-    name: Trivy Container Scan and SBOM
-    runs-on: ubuntu-latest
-    needs: build-images
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: docker-images
-      - name: Load Docker images
-        run: docker load -i images.tar
-      - name: Scan Node image
-        uses: aquasecurity/trivy-action@v0.31.0
-        with:
-          image-ref: ${{ needs.build-images.outputs.node_image }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 1
-          format: table
-      - name: Scan Python image
-        uses: aquasecurity/trivy-action@v0.31.0
-        with:
-          image-ref: ${{ needs.build-images.outputs.python_image }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 1
-          format: table
-      - name: Generate Node SBOM
-        uses: aquasecurity/trivy-action@v0.31.0
-        with:
-          image-ref: ${{ needs.build-images.outputs.node_image }}
-          format: cyclonedx
-          output: node-sbom.json
-          exit-code: 0
-      - name: Generate Python SBOM
-        uses: aquasecurity/trivy-action@v0.31.0
-        with:
-          image-ref: ${{ needs.build-images.outputs.python_image }}
-          format: cyclonedx
-          output: python-sbom.json
-          exit-code: 0
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sboms
-          path: |
-            node-sbom.json
-            python-sbom.json
+  name: Trivy Container Scan and SBOM
+  runs-on: ubuntu-latest
+  needs: build-images
+  permissions:
+    contents: read
+
+  steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: docker-images
+
+    - name: Load Docker images
+      run: docker load -i images.tar
+
+    - name: Setup Trivy
+      uses: aquasecurity/setup-trivy@ff1b8b060f23b650436d419b5e13f67f5d4c3087
+      with:
+        version: v0.63.0
+
+    - name: Scan Node image
+      run: |
+        trivy image \
+          --severity HIGH,CRITICAL \
+          --ignore-unfixed \
+          --exit-code 1 \
+          --format table \
+          "${{ needs.build-images.outputs.node_image }}"
+
+    - name: Scan Python image
+      run: |
+        trivy image \
+          --severity HIGH,CRITICAL \
+          --ignore-unfixed \
+          --exit-code 1 \
+          --format table \
+          "${{ needs.build-images.outputs.python_image }}"
+
+    - name: Generate Node SBOM
+      run: |
+        trivy image \
+          --format cyclonedx \
+          --output node-sbom.json \
+          --exit-code 0 \
+          "${{ needs.build-images.outputs.node_image }}"
+
+    - name: Generate Python SBOM
+      run: |
+        trivy image \
+          --format cyclonedx \
+          --output python-sbom.json \
+          --exit-code 0 \
+          "${{ needs.build-images.outputs.python_image }}"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sboms
+        path: |
+          node-sbom.json
+          python-sbom.json
 
   integration-test:
     name: Docker Compose Smoke and Integration
