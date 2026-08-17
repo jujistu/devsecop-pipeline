@@ -50,7 +50,7 @@ jobs:
         run: yarn test
       - name: Node coverage
         run: "yarn test:coverage"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: node-coverage
           path: quotiiBackend/coverage/
@@ -82,7 +82,7 @@ jobs:
         run: |
           chmod +x quotiiPdfProcessor/scripts/run-tests.sh
           ./quotiiPdfProcessor/scripts/run-tests.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-coverage
           path: quotiiPdfProcessor/coverage.xml
@@ -122,7 +122,7 @@ jobs:
           out: dependency-check-report
           args: |
             --enableRetired --failOnCVSS 7
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: dependency-check-report
@@ -228,7 +228,7 @@ jobs:
         run: >-
           docker save "${{ steps.meta.outputs.node_image }}" "${{
           steps.meta.outputs.python_image }}" -o images.tar
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: docker-images
           path: images.tar
@@ -286,7 +286,7 @@ jobs:
           output: python-sbom.json
           exit-code: 0
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sboms
@@ -325,7 +325,7 @@ jobs:
       - name: Collect logs
         if: always()
         run: docker compose -f docker-compose.ci.yml logs --no-color > compose.log
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-logs
@@ -363,7 +363,7 @@ jobs:
           ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t http://127.0.0.1:3000/ \
             -r zap-backend-report.html -J zap-backend-report.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: zap-reports
