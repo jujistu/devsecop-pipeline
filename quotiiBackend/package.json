@@ -57,6 +57,8 @@
     "form-data": "4.0.6",
     "jws": "4.0.1",
     "sha.js": "2.4.12",
+    "picomatch": "2.3.2",
+    "uuid": "11.1.1",
     "websocket-driver": "0.7.5"
   },
   "devDependencies": {
