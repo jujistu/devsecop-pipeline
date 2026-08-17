@@ -1,0 +1,44 @@
+name: Quotii k6 Performance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+env:
+  K6_WEB_DASHBOARD: "false"
+
+jobs:
+  k6:
+    name: k6 API Performance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reset fake object store
+        run: rm -rf .ci/object-store && mkdir -p .ci/object-store
+      - name: Start Docker Compose stack
+        run: docker compose -f docker-compose.ci.yml up --build -d
+      - name: Wait for services
+        run: |
+          chmod +x scripts/wait-for-services.sh
+          ./scripts/wait-for-services.sh
+      - name: Run k6 scenario
+        run: |
+          docker run --rm --network host -v "$PWD:/work" grafana/k6:0.50.0 \
+            run /work/tests/performance/api-load.js
+      - name: Collect logs
+        if: always()
+        run: docker compose -f docker-compose.ci.yml logs --no-color > k6-compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-compose-logs
+          path: k6-compose.log
+      - name: Shutdown
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down --volumes --remove-orphans

@@ -1,0 +1,17 @@
+**/.git
+**/.venv
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+**/uploads
+**/outputs
+**/*.log
+**/.pytest_cache
+**/.ruff_cache
+**/dependency-check-report
+**/*.tar

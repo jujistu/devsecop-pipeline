@@ -1,0 +1,110 @@
+services:
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_DATABASE: quotii_ci
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ci
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - ci
+
+  pdf-processor:
+    build:
+      context: ./quotiiPdfProcessor
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: test
+      MONGO_URI: mongodb://mongo:27017/quotii_ci
+      REDIS_URL: redis://redis:6379
+      OBJECT_STORE: fake
+      FAKE_OBJECT_STORE_DIR: /object-store
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./.ci/object-store:/object-store
+    networks:
+      - ci
+
+  pdf-worker:
+    build:
+      context: ./quotiiPdfProcessor
+      dockerfile: Dockerfile
+    command: ['python', 'worker.py']
+    environment:
+      APP_ENV: test
+      MONGO_URI: mongodb://mongo:27017/quotii_ci
+      REDIS_URL: redis://redis:6379
+      OBJECT_STORE: fake
+      FAKE_OBJECT_STORE_DIR: /object-store
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pdf-processor:
+        condition: service_started
+    volumes:
+      - ./.ci/object-store:/object-store
+    networks:
+      - ci
+
+  backend:
+    build:
+      context: ./quotiiBackend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: test
+      APP_ENV: test
+      FIREBASE_ENABLED: 'false'
+      MONGO_DB_CONNECTION_STRING: mongodb://mongo:27017/quotii_ci
+      REDIS_URL: redis://redis:6379
+      PDF_PROCESSOR_ENDPOINT: http://pdf-processor:8000
+      JWT_ACCESS_SECRET: ci-only-access-secret-change-me
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-change-me
+      JWT_REFRESH_EXPIRATION: 7d
+      APP_ID: ci-test-app-id
+      OBJECT_STORE: fake
+      FAKE_OBJECT_STORE_DIR: /object-store
+      R2_ENDPOINT: ''
+      R2_ACCESS_KEY_ID: ''
+      R2_SECRET_ACCESS_KEY: ''
+      R2_BUCKET: ''
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pdf-processor:
+        condition: service_started
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./.ci/object-store:/object-store
+    networks:
+      - ci
+
+networks:
+  ci:
+    driver: bridge
