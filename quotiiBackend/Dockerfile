@@ -6,7 +6,8 @@ WORKDIR /app
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --frozen-lockfile --production=true && \
+RUN yarn config set network-timeout 600000 -g && \
+    yarn install --frozen-lockfile --production=true && \
     yarn cache clean
 
 
@@ -16,7 +17,8 @@ WORKDIR /app
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --frozen-lockfile
+RUN yarn config set network-timeout 600000 -g && \
+    yarn install --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -30,7 +32,13 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-RUN addgroup -S quotii && \
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /opt/yarn* \
+           /usr/local/bin/yarn \
+           /usr/local/bin/yarnpkg && \
+    addgroup -S quotii && \
     adduser -S quotii -G quotii
 
 COPY --from=deps /app/node_modules ./node_modules
