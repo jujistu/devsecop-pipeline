@@ -7,4 +7,4 @@ httpx>=0.27,<1
 
 # Config / DB / object storage
 python-dotenv>=1.0.1
-pymongo>=4.8.0,<5
+pymongo>=4.17.0,<5
