@@ -27,7 +27,7 @@ pymongo>=4.8.0,<5
 boto3>=1.35.0,<2
 
 # Queue
-arq>=0.25,<1
+arq>=0.28.0,<1
 redis>=4.2,<5.2
 
 # PDF extract — pdf-inspector is a small Rust wheel (~2.5 MB), no ML deps.
