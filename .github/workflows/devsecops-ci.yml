@@ -316,10 +316,60 @@ jobs:
         run: rm -rf .ci/object-store && mkdir -p .ci/object-store
       - name: Start integration environment
         run: docker compose -f docker-compose.ci.yml up --build -d
+
+      - name: Show container status
+        run: |
+          docker compose -f docker-compose.ci.yml ps
+
+      - name: Show container logs
+        run: |
+          docker compose -f docker-compose.ci.yml logs --no-color --tail=200
+
+      - name: Check PDF Processor
+        run: |
+          echo "=== localhost:8000 ==="
+          curl -v --max-time 10 http://localhost:8000/health || true
+
+          echo
+          echo "=== Docker containers ==="
+          docker ps -a
+
       - name: Wait for services
         run: |
           chmod +x scripts/wait-for-services.sh
           ./scripts/wait-for-services.sh
+
+      - name: Run integration tests
+        run: |
+          pytest
+
+      - name: Debug services
+        if: always()
+        run: |
+          echo "===== CONTAINER STATUS ====="
+          docker compose -f docker-compose.ci.yml ps
+
+          echo
+          echo "===== PDF PROCESSOR LOGS ====="
+          docker compose -f docker-compose.ci.yml logs --no-color pdf-processor
+
+          echo
+          echo "===== PDF WORKER LOGS ====="
+          docker compose -f docker-compose.ci.yml logs --no-color pdf-worker
+
+          echo
+          echo "===== BACKEND LOGS ====="
+          docker compose -f docker-compose.ci.yml logs --no-color backend
+
+          echo
+          echo "===== ALL LOGS ====="
+          docker compose -f docker-compose.ci.yml logs --no-color --tail=300
+
+      - name: Stop integration environment
+        if: always()
+        run: |
+          docker compose -f docker-compose.ci.yml down -v
+
       - name: API smoke tests
         run: |
           chmod +x tests/smoke/api-smoke.sh

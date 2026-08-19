@@ -12,8 +12,16 @@ services=(
 for entry in "${services[@]}"; do
   url="${entry%%|*}"
   name="${entry##*|}"
+
   echo "Waiting for ${name} at ${url}..."
-  timeout 180 bash -c "until curl --fail --silent '${url}' > /dev/null; do sleep 3; done"
+
+  timeout 180 bash -c "
+    until curl --fail --silent --show-error '${url}' > /dev/null; do
+      echo '${name} not ready yet...'
+      sleep 3
+    done
+  "
+
   echo "${name} is healthy."
 done
 

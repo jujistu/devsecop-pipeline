@@ -22,8 +22,14 @@ RUN python -m venv /opt/venv && \
       pip \
       "setuptools>=78.1.1" \
       "wheel>=0.46.2" && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-
+      /opt/venv/bin/pip install --no-cache-dir -r requirements.txt && \
+      echo "=== INSTALLED ARQ ===" && \
+      /opt/venv/bin/pip show arq && \
+      echo "=== INSTALLED REDIS ===" && \
+      /opt/venv/bin/pip show redis && \
+      echo "=== TEST IMPORTS ===" && \
+      /opt/venv/bin/python -c "import arq; print('ARQ OK:', arq.__file__)" && \
+      /opt/venv/bin/python -c "import redis; print('REDIS OK:', redis.__file__)"
 
 FROM python:3.11-slim AS runtime
 
