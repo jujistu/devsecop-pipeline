@@ -16,7 +16,7 @@
 # which installs requirements.txt in full.
 
 # App / HTTP (needed so FastAPI TestClient and app.py import cleanly)
-fastapi>=0.115,<1
+fastapi>=0.141.1,<1
 uvicorn[standard]>=0.30,<1
 python-multipart>=0.0.9,<1
 httpx>=0.27,<1
