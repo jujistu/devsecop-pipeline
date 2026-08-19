@@ -28,7 +28,7 @@ boto3>=1.35.0,<2
 
 # Queue
 arq>=0.25,<1
-redis>=4.2,<5.2
+redis>=8.1.0,<8.2
 
 # PDF extract — pdf-inspector is a small Rust wheel (~2.5 MB), no ML deps.
 # Required because pdf_inspector_extractor.py imports it at module level
