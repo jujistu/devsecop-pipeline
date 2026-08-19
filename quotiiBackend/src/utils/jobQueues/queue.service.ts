@@ -24,10 +24,12 @@ export default class QueueService {
 
   private static instance: QueueService;
 
-  private static CONNECTOR = getRedisConnection();
+  private static getConnector() {
+    return getRedisConnection();
+  }
 
   private static QUEUE_OPTIONS = {
-    connection: QueueService.CONNECTOR,
+    connection: QueueService.getConnector(),
     defaultJobOptions: {
       removeOnComplete: true,
       removeOnFail: false,
@@ -40,13 +42,15 @@ export default class QueueService {
     if (QueueService.instance instanceof QueueService) {
       return QueueService.instance;
     }
+
     this.queues = {};
     QueueService.instance = this;
 
     this.instantiateQueues();
-    this.instantiateWorkers();
+
     if (initializeJobs) {
-      this.instantiateJobs();
+      this.instantiateWorkers();
+      void this.instantiateJobs();
     }
   }
 
@@ -54,15 +58,17 @@ export default class QueueService {
     return new QueueService(initializeJobs);
   }
 
-  private async instantiateQueues() {
+  private instantiateQueues() {
     this.defaultQueue = new Queue(
       Queues.NOTIFICATION,
-      QueueService.QUEUE_OPTIONS
+      QueueService.QUEUE_OPTIONS,
     );
+
     const unsplashQueue = new Queue(
       Queues.UNSPLASH_SYNC,
-      QueueService.QUEUE_OPTIONS
+      QueueService.QUEUE_OPTIONS,
     );
+
     this.queues[Queues.NOTIFICATION] = this.defaultQueue;
     this.queues[Queues.UNSPLASH_SYNC] = unsplashQueue;
   }
@@ -76,24 +82,24 @@ export default class QueueService {
             console.log(
               `job for sending notification called for jobId --> ${
                 job.id
-              } at ${new Date().toLocaleTimeString()}`
+              } at ${new Date().toLocaleTimeString()}`,
             );
             await sendQuoteNotification(
               job.data.userId,
               job.data.bookIds,
-              job.data.syncToNuggetOfTheDay
+              job.data.syncToNuggetOfTheDay,
             );
             break;
         }
       },
       {
-        connection: QueueService.CONNECTOR,
+        connection: QueueService.getConnector(),
         autorun: true,
         // Wave B — issue 20: serialize quote-notification jobs so selecting and
         // claiming a quote is atomic. With concurrency >1, overlapping jobs can
         // sample the same unseen quote and deliver it twice (TOCTOU).
         concurrency: 1,
-      }
+      },
     );
     notificationWorker.on('completed', (job: Job, value) => {
       console.log(
@@ -101,7 +107,7 @@ export default class QueueService {
           Data: ${job.asJSON().data}\n
           ID: ${job.id}\n
           Value: ${value}
-        `
+        `,
       );
     });
 
@@ -111,7 +117,7 @@ export default class QueueService {
           Data: ${job.asJSON().data}\n
           ID: ${job.id}\n
           Value: ${error}
-        `
+        `,
       );
     });
 
@@ -123,7 +129,7 @@ export default class QueueService {
             console.log(
               `job for getting nugget of the day photo called for jobId --> ${
                 job.id
-              } at ${new Date().toLocaleTimeString()}`
+              } at ${new Date().toLocaleTimeString()}`,
             );
             try {
               const photo = await getRandomPhoto({
@@ -132,7 +138,7 @@ export default class QueueService {
               });
               // Track the download
               const photoDownloadUrl = await trackPhotoDownload(
-                photo.links.download_location
+                photo.links.download_location,
               );
 
               await MediaConfig.findOneAndUpdate(
@@ -141,7 +147,7 @@ export default class QueueService {
                   nuggetOfTheDayImageUrl: photo.urls.regular,
                   nuggetOfTheDayTrackedDownloadUrl: photoDownloadUrl.url,
                 },
-                { upsert: true }
+                { upsert: true },
               );
             } catch (error) {
               console.error('Failed to update nugget of the day photo:', error);
@@ -154,9 +160,9 @@ export default class QueueService {
         }
       },
       {
-        connection: QueueService.CONNECTOR,
+        connection: QueueService.getConnector(),
         autorun: true,
-      }
+      },
     );
     unsplashWorker.on('completed', (job: Job, value) => {
       console.log(
@@ -164,7 +170,7 @@ export default class QueueService {
           Data: ${job.asJSON().data}\n
           ID: ${job.id}\n
           Value: ${value}
-        `
+        `,
       );
     });
 
@@ -174,7 +180,7 @@ export default class QueueService {
           Data: ${job.asJSON().data}\n
           ID: ${job.id}\n
           Value: ${error}
-        `
+        `,
       );
     });
   }
@@ -201,7 +207,7 @@ export default class QueueService {
           immediately: true,
           key: repeatJobKey,
         },
-      }
+      },
     );
     await this.getJobInfo(Queues.UNSPLASH_SYNC);
   }
