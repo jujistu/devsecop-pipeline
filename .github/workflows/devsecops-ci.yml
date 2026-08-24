@@ -161,7 +161,7 @@ jobs:
           name: node-coverage
           path: quotiiBackend/coverage
       - name: SonarCloud scan (Backend)
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: "${{ github.workspace }}/quotiiBackend"
         env:
@@ -181,7 +181,7 @@ jobs:
           name: python-coverage
           path: quotiiPdfProcessor
       - name: SonarCloud scan (PDF Processor)
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: "${{ github.workspace }}/quotiiPdfProcessor"
         env:
